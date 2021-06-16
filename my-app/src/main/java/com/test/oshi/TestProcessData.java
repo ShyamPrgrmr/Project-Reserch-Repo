@@ -1,39 +1,32 @@
 package com.test.oshi;
 
+import java.util.Iterator;
+import java.util.List;
+
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
 public class TestProcessData{
-	public static void main(String[] args) throws InterruptedException {
-		OSProcess process;
-		long currentTime,previousTime = 0,timeDifference;
-		double cpu;
-		int pid = 5764;
+	
+	public static int getProcessId(String processName, String processPath) {
+		
 		SystemInfo si = new SystemInfo();
 		OperatingSystem os = si.getOperatingSystem();
-		CentralProcessor processor = si.getHardware().getProcessor();
-		int cpuNumber = processor.getLogicalProcessorCount();
-		boolean processExists = true;
-		process = os.getProcess(pid);
-		System.out.println( (process.getResidentSetSize()/1024)/1024 + " MB" );
-		System.out.println( process.getThreadCount());
-		System.out.println( process.getThreadDetails().toString());
+		List<OSProcess> listofprocesses = os.getProcesses();
+		@SuppressWarnings("rawtypes")
+		Iterator itr = listofprocesses.iterator();
 		
-		/*
-		 * while (processExists) { process = os.getProcess(pid); if (process != null) {
-		 * 
-		 * currentTime = process.getKernelTime() + process.getUserTime();
-		 * 
-		 * if (previousTime != -1) {
-		 * 
-		 * timeDifference = currentTime - previousTime; cpu = (100d * (timeDifference /
-		 * ((double) 1000))) / cpuNumber; System.out.println(cpu); }
-		 * 
-		 * previousTime = currentTime;
-		 * 
-		 * Thread.sleep(1000); } else { processExists = false; } }
-		 */
+		while(itr.hasNext()) {
+			OSProcess process = (OSProcess)itr.next();
+			if(process.getCommandLine() == processPath) {
+				return process.getProcessID();
+			}
+		}
+		
+		
+		return 0;
 	}
+	
 }
