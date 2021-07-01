@@ -19,7 +19,9 @@ public class IndividualApplicationChecker implements Runnable{
 	
 	@Override
 	public String toString(){
-		return ("\nMemory Usage :: "+ ((CheckedParameter.memoryUsage/1024)/1024)+" MB"
+		
+		return ("\nApplication Name :: "+apn.getApplicationName()
+				+"\nMemory Usage :: "+ ((CheckedParameter.memoryUsage/1024)/1024)+" MB"
 				+ "\nDisk Usage ::" + (((CheckedParameter.bytesRead + CheckedParameter.bytesWrite)/1024)/1024)+" MB"
 				+ "\nNumber of Threads :: "+(CheckedParameter.threadCount)
 				+ "\nUP time :: "+(CheckedParameter.upTime/60000 +" Min.")
@@ -43,6 +45,7 @@ public class IndividualApplicationChecker implements Runnable{
 			CheckedParameter.bytesWrite += process.getBytesWritten();
 			CheckedParameter.threadCount +=process.getThreadCount();
 			CheckedParameter.numberofOpenedFile += process.getOpenFiles();
+		
 			
 			
 			//BUG
