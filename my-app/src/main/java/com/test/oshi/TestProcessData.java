@@ -11,7 +11,6 @@ import oshi.software.os.OperatingSystem;
 public class TestProcessData{
 	
 	public static int getProcessId(String processName, String processPath) {
-		
 		SystemInfo si = new SystemInfo();
 		OperatingSystem os = si.getOperatingSystem();
 		List<OSProcess> listofprocesses = os.getProcesses();
@@ -20,11 +19,14 @@ public class TestProcessData{
 		
 		while(itr.hasNext()) {
 			OSProcess process = (OSProcess)itr.next();
-			if(process.getCommandLine() == processPath) {
+			String path = new String(process.getCommandLine()).replaceAll("\"", "");
+			
+			if(process.getName().equals(processName) || path.contains(processPath)) {
+				System.out.println("Process "+process.getProcessID());
+				System.out.println("Parent Process "+process.getParentProcessID());
 				return process.getProcessID();
 			}
 		}
-		
 		
 		return 0;
 	}

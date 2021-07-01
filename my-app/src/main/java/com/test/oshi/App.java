@@ -16,19 +16,24 @@ public class App
 {
     public static void main( String[] args )
     {
-		String checkApp = "‪C:\\Users\\Asus\\eclipse\\java-2020-06\\eclipse\\eclipse.exe";
+    	
+		String checkApp = "‪C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 		String name = "eclipse";
 		ProcessThreshold processThreshold = new ProcessThreshold();
-		processThreshold.setMaxMemoryUse(1024);
-		
-		int pid=5764;
-		SystemInfo si = new SystemInfo();
-		OperatingSystem os =si.getOperatingSystem(); 
-		OSProcess process = os.getProcess(pid); 
-		System.out.println(process.getCommandLine());
-          
+		processThreshold.setMaxMemoryUse(2);
+		//int id = new TestProcessData().getProcessId(name, checkApp);
+		CheckProcessThread checkThread;
+		int id=10824;
+		if(id==0) 
+			System.out.println("Process not found");
+		else {
+			
+			SystemInfo si = new SystemInfo();
+			OperatingSystem os = si.getOperatingSystem();
+			List<OSProcess>processes =  os.getChildProcesses(id, 0, null);
+			System.out.println(processes.toString());
+			
+		}
+			//checkThread = new CheckProcessThread(checkApp,name,id,processThreshold);
     }
-    
-    
-    
 }

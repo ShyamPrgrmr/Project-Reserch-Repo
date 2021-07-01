@@ -1,5 +1,9 @@
 package com.test.oshi;
 
+
+
+import org.slf4j.Logger;
+
 import oshi.SystemInfo;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
@@ -12,13 +16,15 @@ public class CheckProcessThread extends Thread{
 	private String processName;
 	private Boolean check;
 	private ProcessThreshold processThreshold;
+	private Logger logger;
 	
-	public CheckProcessThread(OSProcess process, String path, String name,int processId,ProcessThreshold processThreshold) {
-		this.process = process;
+	public CheckProcessThread(String path, String name,int processId,ProcessThreshold processThreshold) {
 		this.path = path;
 		this.processName = name;
 		this.processId = processId;
 		this.processThreshold = processThreshold;
+		this.check=true;
+		run();
 	}
 
 	public OSProcess getProcess() {
@@ -35,6 +41,7 @@ public class CheckProcessThread extends Thread{
 	
 	@Override
 	public void run() {
+		System.out.println("Checking Thread is Running for"+processName);
 		while(this.check) {
 			try {
 				
@@ -42,22 +49,30 @@ public class CheckProcessThread extends Thread{
 				OperatingSystem os =si.getOperatingSystem(); 
 				process = os.getProcess(this.processId); 
 				
-				if(process.getState().equals("STOPPED")) {
-					this.check = false;
-				}
 				
-				if(process.getState().equals("RUNNING")) {
-					//checking memory usage
-					int used = (int) (process.getResidentSetSize()/1024)/1024;
-					System.out.println((process.getResidentSetSize()/1024)/1024 + " MB" );
-					
-					if(processThreshold.getMaxMemoryUse()< used) {
-						//Operations we have to perform//
-						System.out.println("....Consuming More Memory");
-					}
-				}
 				
-				this.wait(5000);
+			  int used =(int) (process.getResidentSetSize()/1024)/1024;
+			  System.out.println((process.getResidentSetSize()/1024)/1024 + " MB" );
+			  System.out.println(processName+" "+"Process is running....");
+			  
+			  if(processThreshold.getMaxMemoryUse()< used) { 
+
+				  System.out.println("Consuming More Memory");
+			  }
+				
+				
+			  if(process.getState().equals("STOPPED")) { 
+				this.check = false;
+			  	logger.info(processName+" "+"Process is Stopped...."); 
+			  }
+			  
+			  if(process.getState().equals("RUNNING")) { 
+					  //checking memory usage 
+					   
+				  
+			  }
+				 
+				Thread.sleep(1000);
 				
 			} catch (InterruptedException e) {
 				this.check = !this.check;
