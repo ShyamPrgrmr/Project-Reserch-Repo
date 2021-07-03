@@ -84,7 +84,7 @@ public class CheckMainThread implements Runnable
 	 * */
 	public void sendDataToServer(HashMap<String,Application> hash) {
 		//lets print all applications
-		
+		//working as expected
 		Iterator itr = hash.entrySet().iterator();
 		System.out.println("\n\nApplication Name -- Application ID");
 		while(itr.hasNext()) {
