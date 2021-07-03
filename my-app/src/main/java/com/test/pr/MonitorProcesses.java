@@ -2,6 +2,11 @@ package com.test.pr;
 
 import java.util.ArrayList;
 
+/*
+ * A simple Data Holder class which will hold the user defined processes.
+ * 
+ * */
+
 public class MonitorProcesses{
 	private ArrayList<Process> processes;
 	

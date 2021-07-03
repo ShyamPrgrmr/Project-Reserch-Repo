@@ -4,12 +4,26 @@ import java.util.ArrayList;
 
 import oshi.software.os.OSProcess;
 
+
+/*
+ * Data holder class, for holding application specific data like process which are running to run the app.
+ * it stores name and cmdpath of the process.
+ * */
 public class Application {
 	private String applicationName;
 	private String cmdPath;
 	private ArrayList<OSProcess> processes;
 	private boolean isChecking = false;
+	private String applicationID;
 	
+	public String getApplicationID() {
+		return applicationID;
+	}
+
+	public void setApplicationID(String applicationID) {
+		this.applicationID = applicationID;
+	}
+
 	public Application(){
 		processes = new ArrayList<OSProcess>();
 	}

@@ -17,6 +17,8 @@ public class IndividualApplicationChecker implements Runnable{
 		this.apn = apn;
 	}
 	
+	
+	//to String method for printing
 	@Override
 	public String toString(){
 		
@@ -30,6 +32,7 @@ public class IndividualApplicationChecker implements Runnable{
 				);
 	}
 	
+	//Individual application check...
 	@Override 
 	public void run() {
 		String name = apn.getApplicationName();
@@ -76,6 +79,11 @@ public class IndividualApplicationChecker implements Runnable{
 		System.out.println(toString());
 	}
 	
+	
+	
+	
+	
+	//BUG...
 	private double getCpuTime(OSProcess pr) {
 		OSProcess process;
 		long currentTime,previousTime = 0,timeDifference;
@@ -101,7 +109,7 @@ public class IndividualApplicationChecker implements Runnable{
 		return cpu;
 	}
 	
-	
+	//resets all attributes to 0
 	private void reset() {
 		CheckedParameter.bytesRead=0;
 		CheckedParameter.bytesWrite=0;
@@ -115,6 +123,8 @@ public class IndividualApplicationChecker implements Runnable{
 		CheckedParameter.upTime=0;
 	}
 	
+	
+	//simple data holder class for storing different attributes of the application
 	private static class CheckedParameter{
 		private static long memoryUsage=0;
 		private static double cpuUsage=0.0;
