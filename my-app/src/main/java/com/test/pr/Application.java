@@ -15,6 +15,7 @@ public class Application {
 	private ArrayList<OSProcess> processes;
 	private boolean isChecking = false;
 	private String applicationID;
+	private String packageName;
 	
 	public String getApplicationID() {
 		return applicationID;
@@ -60,6 +61,14 @@ public class Application {
 	public String toString() {
 		return "Application [applicationName=" + applicationName + ", cmdPath=" + cmdPath + ", processes=" + processes
 				+ ", isChecking=" + isChecking + "]";
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 	
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
@@ -70,11 +71,27 @@ public class CheckMainThread implements Runnable
 		return apHash;
 	}
 
+	
+	//
+	public HashMap<String,String> portWithProcess() {
+		HashMap<String,String> data = new HashMap<String,String>();
+		
+		
+		return data;
+	}
 
 	/*
 	 * Make a request to the server and get id for particular application...
 	 * */
 	public String getIdFromServer(Application apn) {
+		
+		//Params :: Application Name, Package name, Path, Port Number
+		String applicationName = apn.getApplicationName();
+		String path = apn.getCmdPath()==null ? "" : apn.getCmdPath();
+		String port = ""; 
+		String packageName="";
+		
+		
 		//testing :: returning mock id
 		return( " "+ ((int) (Math.random()*10000000) ));
 	}
@@ -83,15 +100,60 @@ public class CheckMainThread implements Runnable
 	 * Send data to server
 	 * */
 	public void sendDataToServer(HashMap<String,Application> hash) {
-		//lets print all applications
-		//working as expected
 		Iterator itr = hash.entrySet().iterator();
-		System.out.println("\n\nApplication Name -- Application ID");
+		RequestSendData r[] = new RequestSendData[hash.size()];
+		int index = 0;
 		while(itr.hasNext()) {
 			Map.Entry mp = (Map.Entry)itr.next();
 			Application apn = (Application) mp.getValue();
-			System.out.println(apn.getApplicationName()+" -- "+apn.getApplicationID());
+			System.out.println(getDataForApplication(apn));
+			//r[index++] = getDataForApplication(apn);
 		}
+		
+		
+	}
+	
+	public RequestSendData getDataForApplication(Application apn) {
+		RequestSendData rsd = new RequestSendData();
+		rsd.setAppicationId(apn.getApplicationID());
+		rsd.setApplicationName(apn.getApplicationName());
+		ArrayList<OSProcess> processes = apn.getProcesses();
+		Iterator<OSProcess> itr = processes.iterator();
+		while(itr.hasNext()) {
+			OSProcess pr = itr.next();
+			long memoryUsage = pr.getResidentSetSize();
+			long diskUsage = pr.getBytesRead() + pr.getBytesWritten();
+			double cpuUsage = getCpuTime(pr);
+			long numberOfThread = pr.getThreadCount();
+			rsd.addAndSetData(memoryUsage, diskUsage, numberOfThread, cpuUsage);
+		}
+		return rsd;
+	}
+	
+	//helper to get cpu usage
+	private double getCpuTime(OSProcess pr) {
+		OSProcess process;
+		long currentTime,previousTime = 0,timeDifference;
+		double cpu=0.0;
+		int pid = pr.getProcessID();
+		SystemInfo si = new SystemInfo();
+		OperatingSystem os = si.getOperatingSystem();
+		CentralProcessor processor = si.getHardware().getProcessor();
+		int cpuNumber = processor.getLogicalProcessorCount();
+		
+		process = os.getProcess(pid);
+		if (process != null) {
+			currentTime = process.getKernelTime() + process.getUserTime();
+			if (previousTime != -1) {
+				timeDifference = currentTime - previousTime;
+				cpu = (100d * (timeDifference / ((double) 1000)))  / (os.getFamily().equalsIgnoreCase("windows")?cpuNumber:1 );;
+			}     
+
+			previousTime = currentTime;
+
+		}
+		
+		return cpu;
 	}
 	
 	
