@@ -1,12 +1,13 @@
 package com.test.pr;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -90,8 +91,11 @@ public class CheckMainThread implements Runnable
 		String path = apn.getCmdPath()==null ? "" : apn.getCmdPath();
 		String port = ""; 
 		String packageName="";
-		
-		
+		JSONObject obj = new JSONObject();
+		obj.put("applicationName", applicationName);
+		obj.put("path", path);
+		obj.put("port", port);
+		obj.put("packageName", packageName);
 		//testing :: returning mock id
 		return( " "+ ((int) (Math.random()*10000000) ));
 	}
@@ -101,16 +105,25 @@ public class CheckMainThread implements Runnable
 	 * */
 	public void sendDataToServer(HashMap<String,Application> hash) {
 		Iterator itr = hash.entrySet().iterator();
-		RequestSendData r[] = new RequestSendData[hash.size()];
-		int index = 0;
+		JSONArray jarray = new JSONArray();
+		
 		while(itr.hasNext()) {
 			Map.Entry mp = (Map.Entry)itr.next();
 			Application apn = (Application) mp.getValue();
-			System.out.println(getDataForApplication(apn));
-			//r[index++] = getDataForApplication(apn);
+			RequestSendData rsd = getDataForApplication(apn);
+			JSONObject obj = new JSONObject();
+			obj.put("applicationID", rsd.getAppicationId());
+			obj.put("applicationName", rsd.getApplicationName());
+			obj.put("memoryUsage", rsd.getMemoryUsage());
+			obj.put("cpuUsage", 0.1);
+			obj.put("diskUsage", rsd.getDiskUsage());
+			obj.put("numberOfThread", rsd.getNumberOfThread());
+			jarray.add(obj);
 		}
 		
+		//send jarray as a request body
 		
+		System.out.println(jarray.toString());
 	}
 	
 	public RequestSendData getDataForApplication(Application apn) {
@@ -209,7 +222,7 @@ public class CheckMainThread implements Runnable
 					
 					//we will have hash map which will conatin's all the id's now we can make request.... 
 					sendDataToServer(temp);
-					Thread.sleep(2000); //wait for 2 seconds
+					Thread.sleep(20000); //wait for 2 seconds
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
