@@ -16,6 +16,7 @@ public class Application {
 	private boolean isChecking = false;
 	private String applicationID;
 	private String packageName;
+	private String ports = "";
 	
 	public String getApplicationID() {
 		return applicationID;
@@ -29,6 +30,14 @@ public class Application {
 		processes = new ArrayList<OSProcess>();
 	}
 	
+	public String getPorts() {
+		return ports;
+	}
+
+	public void setPorts(String ports) {
+		this.ports = ports;
+	}
+
 	public String getApplicationName() {
 		return applicationName;
 	}

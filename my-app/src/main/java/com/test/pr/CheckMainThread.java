@@ -1,5 +1,8 @@
 package com.test.pr;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,12 +20,13 @@ import oshi.software.os.OperatingSystem;
 public class CheckMainThread implements Runnable
 {
 	private MonitorProcesses monitorProcesses;
-	
+	private GetSystemParameters gsps;
 	 //Storing application data
 	private HashMap<String,Application> applicationHashStore;  
 	
 	public CheckMainThread() {
 		applicationHashStore = new HashMap<String,Application>();
+		gsps = new GetSystemParameters();
 	}
 	
 	
@@ -46,6 +50,13 @@ public class CheckMainThread implements Runnable
 	 * 										  Application:application data with all process information>
 	 * */
 	public HashMap<String,Application> getAllProcesses(){
+		HashMap<Integer,ArrayList<Integer>> pap;
+		
+		if(this.gsps.getSystemFamily().equalsIgnoreCase("Windows"))
+			pap = Helper.getProcessAndPortForWindows();
+		else
+			pap = new HashMap<Integer,ArrayList<Integer>>();
+		
 		ArrayList<Process> tempProcesses = new ArrayList<Process>();	
     	SystemInfo si = new SystemInfo(); 
 		OperatingSystem os = si.getOperatingSystem();
@@ -55,9 +66,18 @@ public class CheckMainThread implements Runnable
 		while(itr.hasNext()) {
 			OSProcess pr = itr.next();
 			String name = pr.getName();
+			int pid = pr.getProcessID();
+			String ports="";
+			
+			if(pap.containsKey(pid)) {
+				ArrayList<Integer> portlist = pap.get(pid);
+				ports += Helper.IntegerArrayListToString(portlist);
+			}
+			
 			if(apHash.containsKey(name)) {
 				Application apn = apHash.get(name);
 				apn.addProcess(pr);
+				apn.setPorts(apn.getPorts()+ports);
 				apHash.remove(name);
 				apHash.put(name, apn);
 			}else {
@@ -65,6 +85,7 @@ public class CheckMainThread implements Runnable
 				apn.setApplicationName(pr.getName());
 				apn.setCmdPath(pr.getPath());
 				apn.addProcess(pr);
+				apn.setPorts(apn.getPorts()+ports);
 				apHash.put(name,apn);
 			}
 		
@@ -89,13 +110,16 @@ public class CheckMainThread implements Runnable
 		//Params :: Application Name, Package name, Path, Port Number
 		String applicationName = apn.getApplicationName();
 		String path = apn.getCmdPath()==null ? "" : apn.getCmdPath();
-		String port = ""; 
+		String port = apn.getPorts();
 		String packageName="";
 		JSONObject obj = new JSONObject();
 		obj.put("applicationName", applicationName);
 		obj.put("path", path);
-		obj.put("port", port);
+		if(port.length()!=0) obj.put("port", port.substring(1,port.length()));
+		else obj.put(port, "");
 		obj.put("packageName", packageName);
+		
+		System.out.println(obj.toString());
 		//testing :: returning mock id
 		return( " "+ ((int) (Math.random()*10000000) ));
 	}
@@ -115,7 +139,7 @@ public class CheckMainThread implements Runnable
 			obj.put("applicationID", rsd.getAppicationId());
 			obj.put("applicationName", rsd.getApplicationName());
 			obj.put("memoryUsage", rsd.getMemoryUsage());
-			obj.put("cpuUsage", 0.1);
+			obj.put("cpuUsage", rsd.getCpuUsage());
 			obj.put("diskUsage", rsd.getDiskUsage());
 			obj.put("numberOfThread", rsd.getNumberOfThread());
 			jarray.add(obj);
@@ -130,43 +154,22 @@ public class CheckMainThread implements Runnable
 		RequestSendData rsd = new RequestSendData();
 		rsd.setAppicationId(apn.getApplicationID());
 		rsd.setApplicationName(apn.getApplicationName());
+		
+		if(this.gsps.getSystemFamily().equalsIgnoreCase("Windows"))
+			rsd.setCpuUsage(Helper.getAppCpuUsageForWindows(apn.getApplicationName()));
+		else {
+			rsd.setCpuUsage(Helper.getAppCpuUsageForLinux(apn.getApplicationName()));
+		}
 		ArrayList<OSProcess> processes = apn.getProcesses();
 		Iterator<OSProcess> itr = processes.iterator();
 		while(itr.hasNext()) {
 			OSProcess pr = itr.next();
 			long memoryUsage = pr.getResidentSetSize();
 			long diskUsage = pr.getBytesRead() + pr.getBytesWritten();
-			double cpuUsage = getCpuTime(pr);
 			long numberOfThread = pr.getThreadCount();
-			rsd.addAndSetData(memoryUsage, diskUsage, numberOfThread, cpuUsage);
+			rsd.addAndSetData(memoryUsage, diskUsage, numberOfThread);
 		}
 		return rsd;
-	}
-	
-	//helper to get cpu usage
-	private double getCpuTime(OSProcess pr) {
-		OSProcess process;
-		long currentTime,previousTime = 0,timeDifference;
-		double cpu=0.0;
-		int pid = pr.getProcessID();
-		SystemInfo si = new SystemInfo();
-		OperatingSystem os = si.getOperatingSystem();
-		CentralProcessor processor = si.getHardware().getProcessor();
-		int cpuNumber = processor.getLogicalProcessorCount();
-		
-		process = os.getProcess(pid);
-		if (process != null) {
-			currentTime = process.getKernelTime() + process.getUserTime();
-			if (previousTime != -1) {
-				timeDifference = currentTime - previousTime;
-				cpu = (100d * (timeDifference / ((double) 1000)))  / (os.getFamily().equalsIgnoreCase("windows")?cpuNumber:1 );;
-			}     
-
-			previousTime = currentTime;
-
-		}
-		
-		return cpu;
 	}
 	
 	
@@ -186,6 +189,7 @@ public class CheckMainThread implements Runnable
 					Iterator itr = applicationHash.entrySet().iterator();
 					HashMap<String,Application> temp = new HashMap<String,Application>();
 					
+					
 					while(itr.hasNext()) {
 						
 						Map.Entry mp = (Map.Entry)itr.next();
@@ -200,6 +204,8 @@ public class CheckMainThread implements Runnable
 							//getting id from store and storing it into temp hash.
 							Application newapn = this.applicationHashStore.get(keyName);
 							String id = newapn.getApplicationID();
+							
+
 							apn.setApplicationID(id);
 							temp.put(keyName, apn);
 							
@@ -231,34 +237,3 @@ public class CheckMainThread implements Runnable
 		
 	}
 }
-
-
-
-
-
-
-//for(Process pr : userDefinedProcess) {
-//	String name = pr.getName();
-//	String path = pr.getPath();
-//	Iterator itr = applicationHash.entrySet().iterator();
-//	boolean flag = false;
-//	
-//	if(pr.isFindByPid()) {
-//		String data[] = getPathandName((int)pr.getPid()); 
-//		pr.setName(data[1]);
-//		pr.setPath(data[0]);
-//	}
-//	
-//	while(itr.hasNext()) {
-//		Map.Entry mp = (Map.Entry)itr.next();
-//		Application apn = (Application) mp.getValue();
-//		
-//		if(apn.getApplicationName().equals(pr.getName()) || apn.getCmdPath().equals(pr.getPath())) {
-//			IndividualApplicationChecker iac = new IndividualApplicationChecker(apn);
-//			iac.run();
-//			flag = true;
-//		}
-//		if(flag) break;
-//	}
-//	
-//}

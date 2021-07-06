@@ -10,12 +10,12 @@ public class RequestSendData {
 	private long memoryUsage;
 	private long numberOfThread;
 	private long diskUsage;
-	private double cpuUsage;
+	private String cpuUsage;
 	
 	RequestSendData(){
 		this.appicationId="";
 		this.applicationName="";
-		this.cpuUsage=0;
+		this.cpuUsage="0.0";
 		this.diskUsage=0;
 		this.numberOfThread=0;
 		this.memoryUsage=0;
@@ -58,18 +58,17 @@ public class RequestSendData {
 	public void setDiskUsage(long diskUsage) {
 		this.diskUsage = diskUsage;
 	}
-	public double getCpuUsage() {
+	public String getCpuUsage() {
 		return cpuUsage;
 	}
-	public void setCpuUsage(double cpuUsage) {
+	public void setCpuUsage(String cpuUsage) {
 		this.cpuUsage = cpuUsage;
 	}
 	
-	public void addAndSetData(long memoryUsage,long diskUsage,long numberOfThread,double cpuUsage) {
+	public void addAndSetData(long memoryUsage,long diskUsage,long numberOfThread) {
 		this.memoryUsage += memoryUsage;
 		this.diskUsage += diskUsage;
 		this.numberOfThread += numberOfThread;
-		this.cpuUsage += cpuUsage;
 	}
 	
 }
