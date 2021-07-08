@@ -26,6 +26,7 @@ public class GetSystemParameters{
 		HardwareAbstractionLayer hal = si.getHardware();
 		CentralProcessor cpu = hal.getProcessor();
 		
+		osName = os.getVersionInfo().toString();
 		memorySize = getMemorySize(hal.getMemory().getPhysicalMemory());
 		cpuCores = cpu.getLogicalProcessorCount();
 		systemType = os.getBitness() + "bit";

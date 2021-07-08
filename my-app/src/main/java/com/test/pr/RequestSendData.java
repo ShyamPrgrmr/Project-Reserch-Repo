@@ -11,7 +11,9 @@ public class RequestSendData {
 	private long numberOfThread;
 	private long diskUsage;
 	private String cpuUsage;
+	private String startTime;
 	
+
 	RequestSendData(){
 		this.appicationId="";
 		this.applicationName="";
@@ -19,15 +21,24 @@ public class RequestSendData {
 		this.diskUsage=0;
 		this.numberOfThread=0;
 		this.memoryUsage=0;
+		this.startTime="";
 	}
 	
 	@Override
 	public String toString() {
 		return "RequestSendData [appicationId=" + appicationId + ", applicationName=" + applicationName
 				+ ", memoryUsage=" + memoryUsage + ", numberOfThread=" + numberOfThread + ", diskUsage=" + diskUsage
-				+ ", cpuUsage=" + cpuUsage + "]";
+				+ ", cpuUsage=" + cpuUsage +", startTime="+ startTime +"]";
 	}
 
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+	
 	public String getAppicationId() {
 		return appicationId;
 	}
@@ -72,19 +83,3 @@ public class RequestSendData {
 	}
 	
 }
-
-
-/*
- * Application ID :: 1
-    Application Name :: eclipse
-	Memory Usage :: 659 MB
-	Disk Usage ::619 MB
-	Number of Threads :: 86
-	UP time :: 310 Min.
-	Start time :: 2021-07-01 13:04:31.175
-	CPU Usage :: 3943.71
-
- * 
- * 
- * 
- * */

@@ -3,6 +3,7 @@ package com.test.pr;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ public class CheckMainThread implements Runnable
 	public CheckMainThread() {
 		applicationHashStore = new HashMap<String,Application>();
 		gsps = new GetSystemParameters();
+		
 	}
 	
 	
@@ -50,6 +52,7 @@ public class CheckMainThread implements Runnable
 	 * 										  Application:application data with all process information>
 	 * */
 	public HashMap<String,Application> getAllProcesses(){
+		
 		HashMap<Integer,ArrayList<Integer>> pap;
 		
 		if(this.gsps.getSystemFamily().equalsIgnoreCase("Windows"))
@@ -106,7 +109,6 @@ public class CheckMainThread implements Runnable
 	 * Make a request to the server and get id for particular application...
 	 * */
 	public String getIdFromServer(Application apn) {
-		
 		//Params :: Application Name, Package name, Path, Port Number
 		String applicationName = apn.getApplicationName();
 		String path = apn.getCmdPath()==null ? "" : apn.getCmdPath();
@@ -119,7 +121,7 @@ public class CheckMainThread implements Runnable
 		else obj.put(port, "");
 		obj.put("packageName", packageName);
 		
-		System.out.println(obj.toString());
+		//System.out.println(obj.toString());
 		//testing :: returning mock id
 		return( " "+ ((int) (Math.random()*10000000) ));
 	}
@@ -142,6 +144,7 @@ public class CheckMainThread implements Runnable
 			obj.put("cpuUsage", rsd.getCpuUsage());
 			obj.put("diskUsage", rsd.getDiskUsage());
 			obj.put("numberOfThread", rsd.getNumberOfThread());
+			obj.put("startTime", rsd.getStartTime());
 			jarray.add(obj);
 		}
 		
@@ -149,6 +152,22 @@ public class CheckMainThread implements Runnable
 		
 		System.out.println(jarray.toString());
 	}
+	
+	public void sendSystemData() {
+		JSONObject obj = new JSONObject();
+		
+		obj.put("systemFamily", this.gsps.getSystemFamily());
+		obj.put("manufacturer", this.gsps.getManufacturer());
+		obj.put("cpuCores", this.gsps.getCpuCores());
+		obj.put("diskSize", this.gsps.getDiskSize());
+		obj.put("memorySize", this.gsps.getMemorySize());
+		obj.put("systemUpTime", this.gsps.getSystemUptime());
+		obj.put("systemType", this.gsps.getSystemType());
+		obj.put("osName", this.gsps.getOsName());
+		
+		//send request
+	}
+	
 	
 	public RequestSendData getDataForApplication(Application apn) {
 		RequestSendData rsd = new RequestSendData();
@@ -162,13 +181,18 @@ public class CheckMainThread implements Runnable
 		}
 		ArrayList<OSProcess> processes = apn.getProcesses();
 		Iterator<OSProcess> itr = processes.iterator();
+		long startTime = Long.MAX_VALUE;
 		while(itr.hasNext()) {
 			OSProcess pr = itr.next();
 			long memoryUsage = pr.getResidentSetSize();
 			long diskUsage = pr.getBytesRead() + pr.getBytesWritten();
 			long numberOfThread = pr.getThreadCount();
+			if(pr.getStartTime()<startTime) {
+				startTime = pr.getStartTime();
+			}
 			rsd.addAndSetData(memoryUsage, diskUsage, numberOfThread);
 		}
+		rsd.setStartTime(new Timestamp(startTime).toString());		
 		return rsd;
 	}
 	
@@ -183,7 +207,7 @@ public class CheckMainThread implements Runnable
 	public void run() {
 		
 			try {
-				
+				sendSystemData();
 				while(true) {
 					HashMap<String,Application> applicationHash = getAllProcesses();
 					Iterator itr = applicationHash.entrySet().iterator();

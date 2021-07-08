@@ -17,7 +17,16 @@ public class Application {
 	private String applicationID;
 	private String packageName;
 	private String ports = "";
+	private long startTime = 0;
 	
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
 	public String getApplicationID() {
 		return applicationID;
 	}
